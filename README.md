@@ -58,5 +58,6 @@ Artifacts Parsed:
 * Add field to indicate if app was sideloaded (currently it logs suspicious apps to console)
 * Parse Manifest.db on unencrypted backups
 * Add option to decode Manifest.db if user knows password
+* Recreate folder structures (This will be tough!) 
 * General code refactoring and optimizations
 * Need larger datasets to be tested on
