@@ -3,7 +3,7 @@ Category: ExternalDevices
 Author: Jack Farley
 Version: 1
 Id: e2dbd037-69b5-476a-bbc6-9bcb737d76d4
-BinaryUrl: 
+BinaryUrl: https://github.com/jfarley248/iTunes_Backup_Analyzer
 ExportFormat: db
 Processors:
     -
