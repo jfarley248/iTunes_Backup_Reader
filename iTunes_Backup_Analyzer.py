@@ -2,7 +2,7 @@
    Copyright (c) 2019 Jack Farley
    This file is part of iTunesBackupAnalyzer
    Usage or distribution of this software/code is subject to the
-   terms of the GNU GENERAL PUBLIC LICENSE.
+   terms of the MIT License.
    iTunes_Backup_Analyzer.py
    ------------
 '''
