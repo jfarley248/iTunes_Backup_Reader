@@ -1,0 +1,12 @@
+Description: 'iTunesBackupAnalyzer: Parses iTunes Backups'
+Category: ExternalDevices
+Author: Jack Farley
+Version: 1
+Id: e2dbd037-69b5-476a-bbc6-9bcb737d76d4
+BinaryUrl: 
+ExportFormat: db
+Processors:
+    -
+        Executable: iTunes_Backup_Analyzer.exe
+        CommandLine:  -i %sourceDirectory% -o %destinationDirectory% -v -K
+        ExportFormat: db
