@@ -52,6 +52,7 @@ Artifacts Parsed:
   * Full App Name
   
 ## Future Updates
+* Submit KAPE .mkape file to the official repo (needs a bit more testing with command line options)
 * Add field to indicate if app was sideloaded (currently it logs suspicious apps to console)
 * Parse Manifest.db on unencrypted backups
 * Add option to decode Manifest.db if user knows password
