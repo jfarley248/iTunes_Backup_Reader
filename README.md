@@ -49,7 +49,7 @@ Artifacts Parsed:
   * User's Full Name associated with AppleID
   * Purchase Date
   * App Version
-  * Auto-Downloaded & Redowloaded
+  * Auto-Downloaded & Redownloaded
   * Publisher
   * Full App Name
   
