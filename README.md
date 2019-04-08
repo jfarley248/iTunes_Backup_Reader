@@ -1,6 +1,8 @@
 # iTunesBackupAnalyzer
 Python 3 Script to parse out iTunes backups and outputs to an SQLite Database
 
+*Current Version: 1.0*
+
 Point it at either a directory of backups, or a single backup folder containing the Info.plist, Manifest.plist, and Status.plist
 
 Usage:
