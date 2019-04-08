@@ -10,7 +10,7 @@ Usage:
 usage: iTunes_Backup_Analyzer.exe [-h] -i INPUTDIR [INPUTDIR ...] -o OUTPUTDIR
                                   [OUTPUTDIR ...] [-v] [-K]
 
-Utility to parse out iTunes Backup plists and DB
+Utility to parse out iTunes Backup plists
 
 optional arguments:
   -h, --help            show this help message and exit
