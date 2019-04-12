@@ -1,16 +1,23 @@
-# iTunesBackupAnalyzer
-Python 3 Script to parse out iTunes backups and outputs to an SQLite Database
+# iTunes_Backup_Analyzer
+Python 3 Script to parse out iTunes backups
+*Current Version: 2.0*
 
-*Current Version: 1.0*
+## Updates in version 2.0
+* Added support for recreating the file structure completely on unencrypted backups
+* Added field for each installed application if they were possibly sideloaded
+* More verbose logging
+* Better exception handling
+* Better KAPE implementation by separating backups into folders based on users
 
-Point it at either a directory of backups, or a single backup folder containing the Info.plist, Manifest.plist, and Status.plist
+Backups located in C:\Users\{user}\AppData\Roaming\Apple Computer\MobileSync\Backup\{GUID}
 
 Usage:
 ```
-usage: iTunes_Backup_Analyzer.exe [-h] -i INPUTDIR [INPUTDIR ...] -o OUTPUTDIR
-                                  [OUTPUTDIR ...] [-v] [-K]
+usage: iTunes_Backup_Analyzer.exe [-h] -i INPUTDIR [INPUTDIR ...]
+                                  [-o OUTPUTDIR [OUTPUTDIR ...]] [-v] [-K]
+                                  [-R]
 
-Utility to parse out iTunes Backup plists
+Utility to parse out iTunes Backups
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -19,19 +26,23 @@ optional arguments:
   -o OUTPUTDIR [OUTPUTDIR ...], --outputDir OUTPUTDIR [OUTPUTDIR ...]
                         Directory to store results
   -v, --verbose         increase output verbosity
-  -K, --Kape            Use this flag for Kape Tool, don't use
+  -K, --kape            Flag for KAPE Tool, don't use
+  -R, --recreate        Tries to recreate folder structure for unencrypted
+                        backups
 ```
 
 
 Sample Usage:
 ```
-iTunes_Backup_Analyzer.exe -i "C:\Users\{user}\AppData\Roaming\Apple Computer\Mobilesync\Backup\cf88902bccf8e24459831b3eabd5c6d2462d7240" -o D:\Output_Directory
+iTunes_Backup_Analyzer.exe -i "C:\Users\{user}\AppData\Roaming\Apple Computer\Mobilesync\Backup\cf88902bccf8e24459831b3eabd5c6d2462d7240" -o D:\Output_Directory -v -R
 ```
 
 Artifacts Parsed:
+* Recreation of the entire file structure on unencrypted backups
 * Device Names
 * Device Serial Numbers
 * Product Names
+* Detection of possibly sideloaded apps
 * Product Models
 * Phone Numbers
 * iOS Version
@@ -53,11 +64,8 @@ Artifacts Parsed:
   * Publisher
   * Full App Name
   
+  
 ## Future Updates
-* Submit KAPE .mkape file to the official repo (needs a bit more testing with command line options)
-* Add field to indicate if app was sideloaded (currently it logs suspicious apps to console)
-* Parse Manifest.db on unencrypted backups
-* Add option to decode Manifest.db if user knows password
-* Recreate folder structures (This will be tough!) 
+* Figure out how to decrypt Manifest.db with user known password
 * General code refactoring and optimizations
 * Need larger datasets to be tested on
