@@ -58,7 +58,7 @@ class Applications:
         self.Full_App_Name = Full_App_Name
 
 
-def PrintAll(backups, applications, output):
+def PrintAll(backups, applications, userComps, output):
 
     '''Create list of backup data to be sent to SQL Writer'''
     backup_list = []
@@ -78,7 +78,7 @@ def PrintAll(backups, applications, output):
                       app.Publisher, app.Full_App_Name,]
         application_list.append(apps_item)
 
-    sqlWriter(backup_list, application_list, output)
+    sqlWriter(backup_list, application_list, userComps, output)
 
 
 '''Checks for plist files and DB in backups'''
@@ -195,7 +195,6 @@ def get_argument():
         '''Dictionary to paths of all backup folders to check'''
         allBackups = []
         checkInput(args.inputDir[0], allBackups)
-        logging.info(str(len(allBackups)) + " Backups found!")
         return [allBackups, outputDir, args.recreate, users]
 
 
@@ -226,6 +225,41 @@ def ReadBackupPlists(info_plist, status_plist, manifest_plist, backups):
         info_plist.get('iTunes Version', ''))
     backups.append(bkps)
 
+
+
+'''Really sketchy way of, quote on quote, parsing the iTunes Prefs FRPD to find last 3 users/machines connected to'''
+def frpdHelper(data):
+
+    '''Array to store usernames and computers'''
+    userComps = []
+
+    '''Creates bytearrays for finding magic key and full name'''
+    byteArr = bytearray(data)
+    userByteArr = bytearray()
+
+    '''The bytes here are always 88 bytes before the start of host usernames'''
+    magicOffset = byteArr.find(b'\x00\x01\x01\x80\x00')
+    magic = byteArr[magicOffset:magicOffset + 5]
+
+    if magic == b'\x00\x01\x01\x80\x00':
+        logging.debug("Found magic bytes in iTunes Prefs FRPD... Finding Usernames and Desktop names now")
+        '''93 is the offset after the magic that we see user names'''
+        for x in range (int(magicOffset + 93), len(data)):
+            if (data[x]) == 0:
+                '''157 is the offset after the magic where the computer name is found'''
+                x = int(magicOffset) + 157
+                if userByteArr.decode() == "":
+                    continue
+                else:
+                    userComps.append(userByteArr.decode())
+                    userByteArr = bytearray()
+                    continue
+            else:
+                char =  (data[x])
+                userByteArr.append(char)
+
+        return userComps
+
 '''Really sketchy way of, quote on quote, parsing the SINF to find the full name'''
 def sinfHelper(data):
 
@@ -255,45 +289,70 @@ def sinfHelper(data):
 
 def ReadApplicationPlists(info_plist, singleApplication, applications):
     '''This is all apps installed'''
-    singleApp = info_plist.get("Applications")
+    singleApp = info_plist.get("Applications", '')
 
     '''Now we single it down to the specific app we are looking for, which is another embedded plist'''
     appPlist = singleApp.get(singleApplication, {})
-    iTunesBinaryPlist = appPlist.get('iTunesMetadata', {})
-    iTunesPlist = readPlistFromString(iTunesBinaryPlist)
 
-    '''Find Apple ID & Purchase Date'''
-    downloadInfo = iTunesPlist.get('com.apple.iTunesStore.downloadInfo', {})
-    accountInfo = downloadInfo.get('accountInfo', {})
+    '''Checks if any sideloaded apps are in the dict, which won't have data'''
+    if len(appPlist) != 0:
+        iTunesBinaryPlist = appPlist.get('iTunesMetadata', {})
 
-    '''Find full name of person associated with Apple ID from ApplicationSINF'''
-    binarySinf = appPlist.get('ApplicationSINF', {})
+        iTunesPlist = readPlistFromString(iTunesBinaryPlist)
 
-    '''Gets users full name from SINF'''
-    name = sinfHelper(binarySinf)
-    if name == "":
-        logging.debug("No full name found for: " + iTunesPlist.get('itemName', '')
-                      + " This means it could be sideloaded")
-        sideloaded = True
+
+        '''Find Apple ID & Purchase Date'''
+        downloadInfo = iTunesPlist.get('com.apple.iTunesStore.downloadInfo', {})
+        accountInfo = downloadInfo.get('accountInfo', {})
+
+        '''Find full name of person associated with Apple ID from ApplicationSINF'''
+        binarySinf = appPlist.get('ApplicationSINF', {})
+
+        '''Gets users full name from SINF'''
+        name = sinfHelper(binarySinf)
+
+        if name == "":
+            logging.debug("No full name found for: " + iTunesPlist.get('itemName', '')
+                          + " This means it could be sideloaded")
+            sideloaded = True
+        else:
+            sideloaded = False
+
+        apps = Applications(
+            info_plist.get('Device Name', ''),
+            info_plist.get('Serial Number', ''),
+            iTunesPlist.get('itemName', ''),
+            accountInfo.get('AppleID', ''),
+            name,
+            downloadInfo.get('purchaseDate', ''),
+            sideloaded,
+            iTunesPlist.get('bundleVersion', ''),
+            iTunesPlist.get('is-auto-download', ''),
+            iTunesPlist.get('is-purchased-redownload', ''),
+            iTunesPlist.get('artistName', ''),
+            iTunesPlist.get('softwareVersionBundleId', ''))
+
     else:
-        sideloaded = False
-
-    apps = Applications(
-        info_plist.get('Device Name', ''),
-        info_plist.get('Serial Number', ''),
-        iTunesPlist.get('itemName', ''),
-        accountInfo.get('AppleID', ''),
-        name,
-        downloadInfo.get('purchaseDate', ''),
-        sideloaded,
-        iTunesPlist.get('bundleVersion', ''),
-        iTunesPlist.get('is-auto-download', ''),
-        iTunesPlist.get('is-purchased-redownload', ''),
-        iTunesPlist.get('artistName', ''),
-        iTunesPlist.get('softwareVersionBundleId', ''))
+        apps = Applications(
+            '',
+            '',
+            singleApplication,
+            '',
+            '',
+            '',
+            1,
+            '',
+            '',
+            '',
+            '',
+            singleApplication,)
 
     applications.append(apps)
 
+'''Function to find difference in two lists'''
+def diff(first, second):
+    second = set(second)
+    return [item for item in first if item not in second]
 
 '''Reads data from each plist supplied'''
 def ReadDataFromPlists(info_plist, status_plist, manifest_plist, backups, applications):
@@ -303,15 +362,26 @@ def ReadDataFromPlists(info_plist, status_plist, manifest_plist, backups, applic
 
     ReadBackupPlists(info_plist, status_plist, manifest_plist, backups)
 
-
     allApps = info_plist.get('Applications', '')
+
+    '''Sometimes apps are missing from the Applications field but are present in the Installed Applictaion fields
+    Usually this happens with sideloaded apps'''
+    compare = []
+    for a in allApps:
+        compare.append(a)
+    installedApps = info_plist.get('Installed Applications', '')
+    missingApps = diff(installedApps, compare)
+    if len(missingApps) != 0:
+        for apps in missingApps:
+            logging.info("Found evidence of a sideloaded app: " + apps)
+            allApps[str(apps)] = {}
     for singleApps in allApps:
         ReadApplicationPlists(info_plist, singleApps, applications)
 
 
 
 
-def sqlWriter(backups, applications, output):
+def sqlWriter(backups, applications, userComps, output):
 
     '''Opens database for iTunes_Backups'''
     backupDb = os.path.join(output, "iTunes_Backups.db")
@@ -360,6 +430,32 @@ def sqlWriter(backups, applications, output):
 
     except Exception as ex:
         logging.exception("Error filling Applications table. Error was: " + str(ex))
+
+
+
+
+
+
+    '''Creates database table for computer user accounts and computer names'''
+    createCompQuery = "CREATE TABLE Computers_Connected_To (User_Account_Name TEXT, Computer_Name TEXT);"
+
+    try:
+        c.execute(createCompQuery)
+    except Exception as ex:
+        logging.exception("Failed to execute query: " + createCompQuery + "\nException was: " + str(ex))
+
+    try:
+        for x in range (0, len(userComps),2):
+            y = userComps[x]
+            z = userComps[x+1]
+            conn.execute('''INSERT INTO Computers_Connected_To(User_Account_Name, Computer_Name) VALUES (?,?)''', (y, z))
+
+
+    except Exception as ex:
+        logging.exception("Error filling Computers_Connected_To table. Error was: " + str(ex))
+
+
+
 
 
     '''Closes iTunes_Backups.db'''
@@ -412,7 +508,36 @@ def readbackup(singleIn, singleOut, recreate):
     logging.debug("Trying to create directory: " + customOutput)
     createFolder(customOutput)
 
-    PrintAll(backups, applications, customOutput)
+    '''Find host username of the user who backed it up plus the computers it has connected to, 
+    which there are two locations for, so we'll check them both, see if they're equal, and if not, parse them both'''
+
+    '''First location for the FRPD'''
+    iTunesPrefsPlist = info_plist.get('iTunes Files', {})
+    binaryFrpd = iTunesPrefsPlist.get('iTunesPrefs', '')
+
+    '''First location for the FRPD'''
+    nestediTunesPrefPlist = iTunesPrefsPlist.get('iTunesPrefs.plist', {})
+    parsedNested = readPlistFromString(nestediTunesPrefPlist)
+    iPodPrefsBinaryFrpd = parsedNested.get('iPodPrefs', '')
+
+    '''Check if they're equal'''
+    if iPodPrefsBinaryFrpd == binaryFrpd:
+        logging.debug("The two binary FRPD's matched, this is expected, parsing one now")
+        try:
+            userComps = frpdHelper(binaryFrpd)
+            logging.debug("Successfully parsed binary FRPD")
+        except Exception as ex:
+            logging.exception("Could not parse binary FRPD, exception was: " + str(ex))
+    else:
+        logging.info("The two checked binary FRPD's do not match, we'll parse them both now")
+        userComp1 = frpdHelper(binaryFrpd)
+        userComp2 = frpdHelper(iPodPrefsBinaryFrpd)
+        userComps = userComp1 + userComp2
+
+
+
+    '''Send the data to the printer'''
+    PrintAll(backups, applications, userComps, customOutput)
 
 
     if recreate:
@@ -453,9 +578,14 @@ def main():
 
     else:
         logging.info("1 Backup found!")
-        readbackup(inputDir[0], outputDir, recreate)
+        try:
+            logging.info("Reading backup now")
+            readbackup(inputDir[0], outputDir, recreate)
+            logging.info("Backup successfully parsed")
+        except Exception as ex:
+            logging.exception("Backup could not be parsed, exception was: " + str(ex))
 
-    logging.debug("Program end")
+    logging.info("Program end")
 
 if __name__ == "__main__":
     main()
