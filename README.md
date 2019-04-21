@@ -1,6 +1,6 @@
 # iTunes_Backup_Analyzer
 Python 3 Script to parse out iTunes backups
-*Current Version: 2.1*
+*Current Version: 2.1.1*
 ## Updates in version 2.1
 * Parses binary FRPD files to get the last connected computer names and usernames on the computer
 * Sometimes when apps are sideloaded, they don't appear in "Applications", which has most the interesting data, but only in "Installed Applications" which only contains app's full name. Script now makes sure it gets those potentially sideloaded apps
