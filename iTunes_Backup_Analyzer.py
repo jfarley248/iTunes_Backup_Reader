@@ -238,13 +238,13 @@ def frpdHelper(data):
     userByteArr = bytearray()
 
     '''The bytes here are always 88 bytes before the start of host usernames'''
-    magicOffset = byteArr.find(b'\x01\x01\x80\x00')
+    magicOffset = byteArr.find(b'\x01\x01\x80\x00\x00')
     magic = byteArr[magicOffset:magicOffset + 5]
 
-    if magic == b'\x01\x01\x80\x00':
+    if magic == b'\x01\x01\x80\x00\x00':
         logging.debug("Found magic bytes in iTunes Prefs FRPD... Finding Usernames and Desktop names now")
         '''93 is the offset after the magic that we see user names'''
-        for x in range (int(magicOffset + 93), len(data)):
+        for x in range (int(magicOffset + 92), len(data)):
             if (data[x]) == 0:
                 '''157 is the offset after the magic where the computer name is found'''
                 x = int(magicOffset) + 157

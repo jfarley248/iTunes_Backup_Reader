@@ -11,13 +11,18 @@ from __future__ import print_function
 import os
 import re
 import logging
+import errno
 import sqlite3
 from pathlib_revised import Path2
 
 
 
 def createFolder(folderPath):
+
+
+
     if not os.path.exists(folderPath):
+
         try:
             fixedFolderPath = Path2(folderPath)
 
@@ -73,6 +78,8 @@ def recreate(fileId, domain, relativePath, fType, root, sourceDir):
 def recreateFolder(domain, relativePath, root):
 
     '''If the relative path is empty, then the domain is the root folder'''
+    domain = re.sub('[<>:"/\\|?*]', '_', domain)
+    relativePath = re.sub('[<>:"/\\|?*]', '_', relativePath)
     if not relativePath:
         newFolder = root + "\\" + domain
         createFolder(newFolder)
@@ -96,6 +103,14 @@ def recreateFile(fileId, domain, relativePath, root, sourceDir):
     sanitizedRelPath = relativePath.replace("/", "\\")
     sanitizedRelPath = re.sub('[<>:"/\\|?*]', '_', sanitizedRelPath)
     destFile = root + "\\" + domain + "\\" + sanitizedRelPath
+
+
+    if not os.path.exists(os.path.dirname(destFile)):
+        try:
+            os.makedirs(os.path.dirname(destFile))
+        except OSError as exc:  # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
 
     '''Tries to copy all the files to their recreated directory'''
     try:
