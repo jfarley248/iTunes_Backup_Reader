@@ -78,8 +78,9 @@ def recreate(fileId, domain, relativePath, fType, root, sourceDir):
 def recreateFolder(domain, relativePath, root):
 
     '''If the relative path is empty, then the domain is the root folder'''
-    domain = re.sub('[<>:"/\\|?*]', '_', domain)
-    relativePath = re.sub('[<>:"/\\|?*]', '_', relativePath)
+    domain = re.sub('[<>:"|?*]', '_', domain)
+    relativePath = re.sub('[<>:"|?*]', '_', relativePath)
+    relativePath = relativePath.replace("/", "\\")
     if not relativePath:
         newFolder = root + "\\" + domain
         createFolder(newFolder)
@@ -101,7 +102,7 @@ def recreateFile(fileId, domain, relativePath, root, sourceDir):
 
     '''Gets rid of folder slashes and replaces with backslashes, offending characters with underscores'''
     sanitizedRelPath = relativePath.replace("/", "\\")
-    sanitizedRelPath = re.sub('[<>:"/\\|?*]', '_', sanitizedRelPath)
+    sanitizedRelPath = re.sub('[<>:"|?*]', '_', sanitizedRelPath)
     destFile = root + "\\" + domain + "\\" + sanitizedRelPath
 
 
