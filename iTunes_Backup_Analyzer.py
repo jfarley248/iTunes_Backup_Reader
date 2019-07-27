@@ -12,6 +12,7 @@ import os
 import logging
 import argparse
 from biplist import *
+import sys
 import glob
 from manifestParser import OpenDb, readManiDb, createFolder
 
@@ -88,22 +89,29 @@ def checkPlists(folder, allBackups):
         if os.path.exists(os.path.join(folder, "Info.plist")):
             logging.debug("Found Info.plist")
         else:
-            logging.exception("Could not find Info.Plist in: ", folder)
+            logging.exception("Could not find Info.Plist in: " + folder)
+            sys.exit()
 
         if os.path.exists(os.path.join(folder, "Manifest.plist")):
             logging.debug("Found Manifest.plist")
         else:
-            logging.exception("Could not find Manifest.Plist in: ", folder)
+            logging.exception("Could not find Manifest.Plist in: " + folder)
+            sys.exit()
 
         if os.path.exists(os.path.join(folder, "Status.plist")):
             logging.debug("Found Status.plist")
         else:
-            logging.exception("Could not find Status.Plist in: ", folder)
+            logging.exception("Could not find Status.Plist in: " + folder)
+            sys.exit()
 
         if os.path.exists(os.path.join(folder, "Manifest.db")):
             logging.debug("Found Manifest.db")
         else:
-            logging.exception("Could not find Manifest.db in: ", folder)
+            logging.exception("Could not find Manifest.db in: " + folder)
+            sys.exit()
+
+        if os.path.exists(os.path.join(folder, "Manifest.mbdb")):
+            logging.debug("Found a Manifest.mbdb. This is indicative of an older backup, and is not supported for recreating folder structures")
 
         '''Checks for existence of output directory'''
         if os.path.isdir(folder):
@@ -476,6 +484,8 @@ def readbackup(singleIn, singleOut, recreate):
     manifest_plist_path = os.path.join(singleIn, "Manifest.plist")
     info_plist_path = os.path.join(singleIn, "Info.plist")
     manifest_db_path = os.path.join(singleIn, "Manifest.db")
+    unsuppported_manifest_db_path = os.path.join(singleIn, "Manifest.mbdb")
+
 
     try:
         info_plist = readPlist(info_plist_path)
