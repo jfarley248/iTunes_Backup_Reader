@@ -3,6 +3,11 @@ Python 3 Script to parse out iTunes backups
 
 Download binary from the Releases section: https://github.com/jfarley248/iTunes_Backup_Analyzer/releases
 
+## Major Rewrite coming soon!!
+* Support for older backups
+* Output to txt, csv, and db
+* And more!
+
 *Current Version: 2.1.3*
 ## Updates in version 2.1
 * Parses binary FRPD files to get the last connected computer names and usernames on the computer
