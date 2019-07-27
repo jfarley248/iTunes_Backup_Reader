@@ -83,50 +83,43 @@ def PrintAll(backups, applications, userComps, output):
 
 
 '''Checks for plist files and DB in backups'''
-def checkPlists(folder, allBackups):
+def checkPlists(input_folder, allBackups):
 
-    if os.path.isdir(folder):
-        if os.path.exists(os.path.join(folder, "Info.plist")):
+    if os.path.isdir(input_folder):
+        if os.path.exists(os.path.join(input_folder, "Info.plist")):
             logging.debug("Found Info.plist")
         else:
-            logging.exception("Could not find Info.Plist in: " + folder)
+            logging.exception("Could not find Info.Plist in: " + input_folder)
             sys.exit()
 
-        if os.path.exists(os.path.join(folder, "Manifest.plist")):
+        if os.path.exists(os.path.join(input_folder, "Manifest.plist")):
             logging.debug("Found Manifest.plist")
         else:
-            logging.exception("Could not find Manifest.Plist in: " + folder)
+            logging.exception("Could not find Manifest.Plist in: " + input_folder)
             sys.exit()
 
-        if os.path.exists(os.path.join(folder, "Status.plist")):
+        if os.path.exists(os.path.join(input_folder, "Status.plist")):
             logging.debug("Found Status.plist")
         else:
-            logging.exception("Could not find Status.Plist in: " + folder)
+            logging.exception("Could not find Status.Plist in: " + input_folder)
             sys.exit()
 
-        if os.path.exists(os.path.join(folder, "Manifest.db")):
+        if os.path.exists(os.path.join(input_folder, "Manifest.db")):
             logging.debug("Found Manifest.db")
         else:
-            logging.exception("Could not find Manifest.db in: " + folder)
-            sys.exit()
+            logging.exception("Could not find Manifest.db in: " + input_folder + " recreating file structure cannot be done")
+            x=0
 
-        if os.path.exists(os.path.join(folder, "Manifest.mbdb")):
+        if os.path.exists(os.path.join(input_folder, "Manifest.mbdb")):
             logging.debug("Found a Manifest.mbdb. This is indicative of an older backup, and is not supported for recreating folder structures")
 
-        '''Checks for existence of output directory'''
-        if os.path.isdir(folder):
-            allBackups.append(folder)
-        else:
-            logging.exception("Error with output directory, is it valid?")
-
     else:
-        logging.exception("Error with input directory " + folder + " is it valid?")
+        logging.exception("Input directory must be a folder containing backup files. Your input: " + input_folder + " is not a directory")
 
 '''Checks the iTunes backup folders for legitimacy'''
 def checkInput(inputDir, allBackups):
-    if type(inputDir) == str:
-        logging.debug("Checking for valid backup")
-        checkPlists(inputDir, allBackups)
+    logging.debug("Checking for valid backup")
+    checkPlists(inputDir, allBackups)
 
 
 
@@ -203,7 +196,7 @@ def get_argument():
         '''Dictionary to paths of all backup folders to check'''
         allBackups = []
         checkInput(args.inputDir[0], allBackups)
-        return [allBackups, outputDir, args.recreate, users]
+        return [args.inputDir[0], outputDir, args.recreate, users]
 
 
 
@@ -573,6 +566,7 @@ def main():
     recreate = args[2]
     users = args[3]
 
+    '''
     if len(inputDir) > 1:
         logging.info(str(len(inputDir)) + " Backups found!")
         userCursor = 0
@@ -585,15 +579,16 @@ def main():
 
             readbackup(folders, outputDir,  recreate)
 
-
+    
     else:
-        logging.info("1 Backup found!")
-        try:
-            logging.info("Reading backup now")
-            readbackup(inputDir[0], outputDir, recreate)
-            logging.info("Backup successfully parsed")
-        except Exception as ex:
-            logging.exception("Backup could not be parsed, exception was: " + str(ex))
+    '''
+    logging.info("1 Backup found!")
+    try:
+        logging.info("Reading backup now")
+        readbackup(inputDir, outputDir, recreate)
+        logging.info("Backup successfully parsed")
+    except Exception as ex:
+        logging.exception("Backup could not be parsed, exception was: " + str(ex))
 
     logging.info("Program end")
 
