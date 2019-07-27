@@ -375,7 +375,7 @@ def ReadDataFromPlists(info_plist, status_plist, manifest_plist, backups, applic
     if len(missingApps) != 0:
         for apps in missingApps:
             logging.info("Found evidence of a sideloaded app: " + apps)
-            allApps[str(apps)] = {}
+            allApps.append[str(apps)]
     for singleApps in allApps:
         ReadApplicationPlists(info_plist, singleApps, applications)
 
