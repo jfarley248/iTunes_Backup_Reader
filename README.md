@@ -30,25 +30,29 @@ Download binary from the Releases section: https://github.com/jfarley248/iTunes_
 
 Usage:
 ```
-usage: iTunes_Backup_Reader.py [-h] -i INPUTDIR [INPUTDIR ...] -o OUTPUTDIR
-                               [OUTPUTDIR ...] [-v] -t OUT_TYPE [OUT_TYPE ...]
-                               [-r]
+usage: iTunes_Backup_Reader.py [-h] -i INPUTDIR -o OUTPUTDIR -t OUT_TYPE [-v]
+                               [-b] [--ir] [-r]
 
-Utility to read iTunes Backups
+Utility to Read iTunes Backups
 
 optional arguments:
   -h, --help            show this help message and exit
-  -i INPUTDIR [INPUTDIR ...], --inputDir INPUTDIR [INPUTDIR ...]
+  -i INPUTDIR, --inputDir INPUTDIR
                         Path to iTunes Backup Folder
-  -o OUTPUTDIR [OUTPUTDIR ...], --outputDir OUTPUTDIR [OUTPUTDIR ...]
+  -o OUTPUTDIR, --outputDir OUTPUTDIR
                         Directory to store results
-  -v, --verbose         increase output verbosity
-  -t OUT_TYPE [OUT_TYPE ...], --type OUT_TYPE [OUT_TYPE ...]
+  -t OUT_TYPE, --type OUT_TYPE
                         Output type. txt csv or db
+  -v, --verbose         increase output verbosity
+  -b, --bulk            Bulk parse. Point at folder containing backup folders
+  --ir                  Incident Response Mode. Will automatically check user
+                        folders for backups. Requires admin rights. Point at
+                        root of drive
   -r, --recreate        Tries to recreate folder structure for unencrypted
                         backups
 
 Process finished with exit code 0
+
 
 ```
 
