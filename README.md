@@ -1,12 +1,20 @@
 # iTunes_Backup_Reader
-Python 3 Script to parse out iTunes Backups
+Python 3 Script to read iTunes Backups
 
 Download binary from the Releases section: https://github.com/jfarley248/iTunes_Backup_Analyzer/releases
 
-NOTE: KAPE Module only supports versions lower than 3.0
+*Current Version: 3.1*
 
-*Current Version: 3.0*
-## Updates in version 3.0
+## Updates in Version 3
+
+#### Version 3.1
+
+* KAPE Support with updated module 
+* IR Mode which automatically goes through drive and finds iTunes backups
+* Bulk processing - Point at a directory of iTunes backups to read them all at once
+
+#### Version 3.0
+
 * Partial rewrite
 * Now FULLY supports parsing unencrypted MBDB backups!
     * ex. You can now recreate file structures with older iTunes Backups
@@ -87,7 +95,6 @@ Artifacts Parsed:
 * Better KAPE implementation by separating backups into folders based on users
   
 # Future Updates
-* Add support for KAPE on version 3.0
 * Figure out how to decrypt Manifest.db with user known password
 * General code refactoring and optimizations
 * Need larger datasets to be tested on
