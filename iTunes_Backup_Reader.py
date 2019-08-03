@@ -13,7 +13,21 @@ import logging
 import argparse
 import time
 import sys
+import ctypes
+import glob
 from helpers import plist_parser, recreator
+from multiprocessing import Process
+
+
+ASCII_ART = '''
+
+  _ _____                   ___          _               ___             _         
+ (_)_   _|  _ _ _  ___ ___ | _ ) __ _ __| |___  _ _ __  | _ \___ __ _ __| |___ _ _ 
+ | | | || || | ' \/ -_|_-< | _ \/ _` / _| / / || | '_ \ |   / -_) _` / _` / -_) '_|
+ |_| |_| \_,_|_||_\___/__/_|___/\__,_\__|_\_\\_,_| .__/_|_|_\___\__,_\__,_\___|_|  
+                        |___|                    |_| |___|                         
+
+'''
 
 
 def createLogger(verbose, output_dir):
@@ -37,15 +51,27 @@ def createLogger(verbose, output_dir):
 
 def parseArgs():
 
-    parser = argparse.ArgumentParser(description='Utility to read iTunes Backups')
+    parser = argparse.ArgumentParser(description='Utility to Read iTunes Backups')
 
     '''Gets paths to necessary folders'''
-    parser.add_argument("-i", '--inputDir', required=True, type=str, nargs='+', dest='inputDir',
+    parser.add_argument("-i", '--inputDir', required=True, type=str, dest='inputDir',
                         help='Path to iTunes Backup Folder')
-    parser.add_argument("-o", '--outputDir', required=True, type=str, nargs='+', dest='outputDir',
+
+    parser.add_argument("-o", '--outputDir', required=True, type=str, dest='outputDir',
                         help='Directory to store results')
+
+    parser.add_argument("-t", "--type", help="Output type. txt csv or db", required=True, type=str,
+                        dest='out_type')
+
     parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
-    parser.add_argument("-t", "--type", help="Output type. txt csv or db", required=True, type=str, nargs='+', dest='out_type')
+
+    parser.add_argument("-b", "--bulk", help="Bulk parse. Point at folder containing backup folders", action="store_true")
+
+    parser.add_argument("--ir", help="Incident Response Mode. Will automatically check user folders for "
+                                    "backups. Requires admin rights. Point at root of drive", action="store_true")
+
+
+
     parser.add_argument("-r", "--recreate", help="Tries to recreate folder structure for unencrypted backups",
                         action="store_true")
 
@@ -53,14 +79,13 @@ def parseArgs():
 
 
     '''Gets all values from users'''
-    input_dir = args.inputDir[0]
-    output_dir = args.outputDir[0]
+    input_dir = args.inputDir
+    output_dir = args.outputDir
     recreate = args.recreate
     verbose = args.verbose
-    out_type = args.out_type[0]
-
-
-
+    out_type = args.out_type
+    bulk = args.bulk
+    ir_mode = args.ir
 
 
     '''Check output directory and create directory if not exists'''
@@ -77,6 +102,11 @@ def parseArgs():
     logger = createLogger(verbose, output_dir)
     logger.debug("Created logger object")
 
+    '''Cant have both IR Mode and Bulk mode'''
+    if ir_mode and bulk:
+        logger.error("Cannot have both IR Mode and Bulk mode, exiting")
+        sys.exit()
+
     '''Check outtype'''
     if out_type.lower() == "db" or out_type.lower() == "csv" or out_type.lower() == "txt":
         pass
@@ -84,7 +114,22 @@ def parseArgs():
         logger.error("Out type of " + out_type + " is not valid. Choose csv, db, or txt")
         sys.exit()
 
-    return input_dir, output_dir, recreate, out_type,logger
+
+    '''Checks admin rights for IR Mode'''
+    if ir_mode:
+        logger.debug("User chose IR Mode... Checking admin rights")
+        try:
+            is_admin = (os.getuid() == 0)
+        except AttributeError:
+            is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+        if is_admin:
+            logger.debug("Admin rights found for IR Mode")
+        if not is_admin:
+            logger.error("Admin rights not found! Exiting")
+            sys.exit()
+
+
+    return input_dir, output_dir, recreate, out_type, ir_mode, bulk, logger
 
 
 def main():
@@ -93,15 +138,41 @@ def main():
     start_time = time.time()
 
     '''Gets all user arguments'''
-    input_dir, output_dir, recreate, out_type, logger = parseArgs()
+    input_dir, output_dir, recreate, out_type, ir_mode, bulk, logger = parseArgs()
 
-    plist_parser.parsePlists(input_dir, output_dir, out_type, logger)
+    '''Parse a single backup'''
+    if not bulk and not ir_mode:
+        logger.info("Starting to read backup at: " + input_dir)
+        plist_parser.parsePlists(input_dir, output_dir, out_type, logger)
 
-    if recreate:
-        logger.debug("User chose to recreate folders. Starting process now")
-        recreator.startRecreate(input_dir, output_dir, logger)
+        if recreate:
+            logger.debug("User chose to recreate folders. Starting process now")
+            recreator.startRecreate(input_dir, output_dir, logger)
+    '''Bulk parse'''
+    if bulk:
+        subfolders = os.listdir(input_dir)
+        for folders in subfolders:
+            current_folder = os.path.join(input_dir + "\\" + folders)
+            logger.info("Starting to read backup at: " + current_folder)
+            plist_parser.parsePlists(current_folder, output_dir, out_type, logger)
+
+            if recreate:
+                logger.info("User chose to recreate folders. Starting process now")
+                recreator.startRecreate(current_folder, output_dir, logger)
+
+    if ir_mode:
+        path = "\\Users\\*\\AppData\\Roaming\\Apple Computer\\MobileSync\\Backup\\*"
+        all_paths = glob.glob(path)
 
 
+        for folders in all_paths:
+
+            logger.info("Starting to read backup at: " + folders)
+            plist_parser.parsePlists(folders, output_dir, out_type, logger)
+
+            if recreate:
+                logger.info("User chose to recreate folders. Starting process now")
+                recreator.startRecreate(folders, output_dir, logger)
 
 
     end_time = time.time()
@@ -110,4 +181,6 @@ def main():
 
 
 if __name__ == "__main__":
+    print(ASCII_ART)
+    print("Written by Jack Farley\n")
     main()

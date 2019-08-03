@@ -13,10 +13,11 @@ from helpers.structs import sinfHelper, frpdHelper
 import os
 import sys
 
+
+
 '''Makes sure each plist exists'''
 def checkPaths(status_plist_path, manifest_plist_path, info_plist_path, logger, input_dir):
     '''Check existance of Status.plist'''
-    x = "\"" + status_plist_path + "\""
     if os.path.isfile(status_plist_path):
         logger.debug("Found Status.plist")
     else:
@@ -140,7 +141,7 @@ def readPlists(status_plist_path, manifest_plist_path, info_plist_path, logger, 
         not_detailed_app_dict.append(tuple(("N/A", "N/A", not_detailed_apps[app]['CFBundleIdentifier'], "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A")))
 
     if len(allApps) == 0:
-        logger.info("No applications found in the Info.plist")
+        logger.debug("No applications found in the Info.plist. Detailed app data won't be available")
     else:
         apps = readApps(allApps, info_plist, logger)
 

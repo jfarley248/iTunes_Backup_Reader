@@ -91,3 +91,6 @@ Artifacts Parsed:
 * Figure out how to decrypt Manifest.db with user known password
 * General code refactoring and optimizations
 * Need larger datasets to be tested on
+
+# Known Issues
+* Problems with recreating file structure if NTFS long paths are not enabled
