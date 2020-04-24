@@ -9,7 +9,9 @@
 from __future__ import unicode_literals
 from __future__ import print_function
 import helpers.deserializer as deserializer
-import biplist
+from biplist import *
+import logging
+import plistlib
 import datetime
 import io
 import os
@@ -27,7 +29,7 @@ def ReadUnixTime(unix_time): # Unix timestamp is time epoch beginning 1970/1/1
                 unix_time = float(unix_time)
             return datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=unix_time)
         except (ValueError, OverflowError, TypeError) as ex:
-            log.error("ReadUnixTime() Failed to convert timestamp from value " + str(unix_time) + " Error was: " + str(ex))
+            logging.error("ReadUnixTime() Failed to convert timestamp from value " + str(unix_time) + " Error was: " + str(ex))
     return None
 
 def createFolder(folderPath, logger):
@@ -58,7 +60,7 @@ def recreate(fileId, domain, relativePath, fType, root, sourceDir, logger, a_tim
     if fType == 4:
         logger.info("Found file with type of 4: " + relativePath)
         logger.info("Type 4 files aren't found in iTunes Backups... But we'll check anyway")
-        type4File = sourceDir + "\\" + fileId[0:2] + "\\" + fileId
+        type4File = os.path.join(sourceDir, fileId[0:2], fileId)
         if os.path.isfile(type4File):
             logger.info("The file actually exists... Please contact jfarley248@gmail.com to correct this code\n")
         else:
@@ -94,11 +96,11 @@ def recreateFolder(domain, relativePath, root, logger):
     relativePath = re.sub('[<>:"|?*]', '_', relativePath)
     relativePath = relativePath.replace("/", "\\")
     if not relativePath:
-        newFolder = root + "\\" + domain
+        newFolder = os.path.join(root, domain)
         createFolder(newFolder, logger)
 
     else:
-        newFolder = root + "\\" + domain + "\\" + relativePath
+        newFolder = os.path.join(root, domain, relativePath)
         createFolder(newFolder, logger)
 
 
@@ -110,12 +112,12 @@ def recreateFile(fileId, domain, relativePath, root, sourceDir, logger, a_time, 
     '''Source file created from taking first two characters of fileID,
        using that as subfolder of source directory, and finding full name of file'''
     subFolder = fileId[0:2]
-    sourceFile = sourceDir + "\\" + subFolder + "\\" + fileId
+    sourceFile = os.path.join(sourceDir, subFolder, fileId)
 
     '''Gets rid of folder slashes and replaces with backslashes, offending characters with underscores'''
     sanitizedRelPath = relativePath.replace("/", "\\")
     sanitizedRelPath = re.sub('[<>:"|?*]', '_', sanitizedRelPath)
-    destFile = root + "\\" + domain + "\\" + sanitizedRelPath
+    destFile = os.path.join(root, domain, sanitizedRelPath)
 
 
     if not os.path.exists(os.path.dirname(destFile)):
@@ -142,7 +144,7 @@ def recreateFile(fileId, domain, relativePath, root, sourceDir, logger, a_time, 
 def readManiDb(manifestPath, sourceDir, outputDir, logger):
 
     '''Creates Root folder for recreated file structure'''
-    root = outputDir + "\\" + "Recreated_File_Structure"
+    root = os.path.join(outputDir, "Recreated_File_Structure")
     createFolder(root, logger)
 
     conn = OpenDb(manifestPath, logger)
@@ -186,7 +188,7 @@ def readManiDb(manifestPath, sourceDir, outputDir, logger):
         WriteMetaDataToDb(file_meta_list, outputDir, logger)
 
 def WriteMetaDataToDb(file_meta_list, outputDir, logger):
-    outputFileInfoDb = outputDir + "\\File_Metadata.db"
+    outputFileInfoDb = os.path.join(outputDir, "File_Metadata.db")
     conn2 = OpenDb(outputFileInfoDb, logger)
 
     createMetaQuery = "CREATE TABLE IF NOT EXISTS Metadata (RelativePath TEXT, LastModified DATE, " \
@@ -220,10 +222,14 @@ def getFileInfo(plist_blob):
         info = deserializer.process_nsa_plist("", f)
         ea = info.get('ExtendedAttributes', None)
         if ea:
-            ea = ea['NS.data']
-            info['ExtendedAttributes'] = ea #str(biplist.readPlistFromString(ea))
+            #INVESTIGATE THIS MORE
+            if type(ea) is bytes:
+                pass
+            else:
+                ea = ea['NS.data']
+                info['ExtendedAttributes'] = ea #str(biplist.readPlistFromString(ea))
     except Exception as ex:
-        logger.exception("Failed to parse file metadata from db, exception was: " + str(ex))
+        logging.exception("Failed to parse file metadata from db, exception was: " + str(ex))
 
     return info
     

@@ -152,7 +152,7 @@ def main():
     if bulk:
         subfolders = os.listdir(input_dir)
         for folders in subfolders:
-            current_folder = os.path.join(input_dir + "\\" + folders)
+            current_folder = os.path.join(input_dir, folders)
             logger.info("Starting to read backup at: " + current_folder)
             plist_parser.parsePlists(current_folder, output_dir, out_type, logger)
 

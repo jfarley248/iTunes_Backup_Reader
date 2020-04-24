@@ -37,10 +37,10 @@ def startRecreate(input_dir, output_dir, logger):
         logger.info("Backup is not encrypted")
 
         '''Create output directpry based on device serial number'''
-        info_plist_path = os.path.join(input_dir + "\\Info.plist")
+        info_plist_path = os.path.join(input_dir, "Info.plist")
         info_plist = readPlist(info_plist_path)
         serial_number = info_plist.get('Serial Number', '')
-        output_dir = os.path.join(output_dir + "\\" + "Device_" + serial_number + "_Folders")
+        output_dir = os.path.join(output_dir, "Device_" + serial_number + "_Folders")
         try:
             logger.debug("Trying to create directory: " + output_dir)
             os.makedirs(output_dir)
