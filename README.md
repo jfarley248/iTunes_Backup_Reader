@@ -5,6 +5,11 @@ Download binary from the Releases section: https://github.com/jfarley248/iTunes_
 
 *Current Version: 3.1*
 
+Updates not found in exe
+
+* Ignore Status.plist dependancy in corrupted backups
+* Fix path issues on Linux
+
 ## Updates in Version 3
 
 #### Version 3.1
