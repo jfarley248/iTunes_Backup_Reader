@@ -21,8 +21,9 @@ def checkPaths(status_plist_path, manifest_plist_path, info_plist_path, logger, 
     if os.path.isfile(status_plist_path):
         logger.debug("Found Status.plist")
     else:
-        logger.error("Status.plist not found in: " + input_dir + "... Exiting")
-        sys.exit()
+        logger.warning("Status.plist not found in: " + input_dir)
+        logger.warning("The Status.plist isn't required, but you will have a loss of data")
+        status_plist_path = None
 
     '''Check existance of Manifest.plist'''
     if os.path.isfile(manifest_plist_path):
@@ -97,13 +98,22 @@ def backupReader(info_plist, manifest_plist, status_plist, logger):
 
     lockdown = manifest_plist.get('Lockdown', {})
 
+    if status_plist is None:
+        status_date = ""
+        is_full_backup = ""
+        status_version = ""
+    else:
+        status_date = status_plist.get('Date', '')
+        is_full_backup = status_plist.get('IsFullBackup', '')
+        status_version = status_plist.get('Version', '')
+
     return [
         info_plist.get('Device Name', ''),
         info_plist.get('Product Name', ''),
         info_plist.get('Product Type', ''),
         info_plist.get('Phone Number', ''),
         lockdown.get('ProductVersion', ''),
-        status_plist.get('Date', ''),
+        status_date,
         info_plist.get('Last Backup Date', ''),
         user_comps,
         manifest_plist.get('WasPasscodeSet', ''),
@@ -113,14 +123,19 @@ def backupReader(info_plist, manifest_plist, status_plist, logger):
         info_plist.get('IMEI', ''),
         info_plist.get('MEID', ''),
         info_plist.get('Serial Number', ''),
-        status_plist.get('IsFullBackup', ''),
-        status_plist.get('Version', ''),
+        is_full_backup,
+        status_version,
         info_plist.get('iTunes Version', '')]
 
 
 def readPlists(status_plist_path, manifest_plist_path, info_plist_path, logger, output_dir):
 
-    status_plist = readPlist(status_plist_path)
+
+    if not os.path.exists(status_plist_path):
+        status_plist = None
+    else:
+
+        status_plist = readPlist(status_plist_path)
     manifest_plist = readPlist(manifest_plist_path)
     info_plist = readPlist(info_plist_path)
 
