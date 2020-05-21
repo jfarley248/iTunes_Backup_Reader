@@ -3,40 +3,17 @@ Python 3 Script to read iTunes Backups
 
 Download binary from the Releases section: https://github.com/jfarley248/iTunes_Backup_Analyzer/releases
 
-*Current Version: 3.1*
+*Current Version: 4.0*
+* Added support for decrypting iOS 10 + Backups
+    * Code implemented from https://github.com/jsharkey13/iphone_backup_decrypt
 
-Updates not found in exe
 
-* Ignore Status.plist dependancy in corrupted backups
-* Fix path issues on Linux
-
-## Updates in Version 3
-
-#### Version 3.1
-
-* KAPE Support with updated module 
-* IR Mode which automatically goes through drive and finds iTunes backups
-* Bulk processing - Point at a directory of iTunes backups to read them all at once
-
-#### Version 3.0
-
-* Partial rewrite
-* Now FULLY supports parsing unencrypted MBDB backups!
-    * ex. You can now recreate file structures with older iTunes Backups
-* Can now output to CSV, TXT or DB
-* More detailed application reports
-* More accurate timestamp labeling 
-* Many bug fixes
-* Still no support for decrypting backups :( 
-* New name to more accurately describe what this tool is doing
-
-*Big thanks to Tony Knutson @bigt252002 for helping me test and providing ideas and feedback on new features!*
 
 
 Usage:
 ```
 usage: iTunes_Backup_Reader.py [-h] -i INPUTDIR -o OUTPUTDIR -t OUT_TYPE [-v]
-                               [-b] [--ir] [-r]
+                               [-b] [--ir] [-r] [-p PASSWORD]
 
 Utility to Read iTunes Backups
 
@@ -55,8 +32,7 @@ optional arguments:
                         root of drive
   -r, --recreate        Tries to recreate folder structure for unencrypted
                         backups
-
-Process finished with exit code 0
+  -p PASSWORD           Password for encrypted backups
 
 
 ```
@@ -91,6 +67,27 @@ Artifacts Parsed:
   * Full App Name
   
   
+## Updates in Version 3
+
+#### Version 3.1
+
+* KAPE Support with updated module 
+* IR Mode which automatically goes through drive and finds iTunes backups
+* Bulk processing - Point at a directory of iTunes backups to read them all at once
+
+#### Version 3.0
+
+* Partial rewrite
+* Now FULLY supports parsing unencrypted MBDB backups!
+    * ex. You can now recreate file structures with older iTunes Backups
+* Can now output to CSV, TXT or DB
+* More detailed application reports
+* More accurate timestamp labeling 
+* Many bug fixes
+* Still no support for decrypting backups :( 
+* New name to more accurately describe what this tool is doing
+
+*Big thanks to Tony Knutson @bigt252002 for helping me test and providing ideas and feedback on new features!*
  
 ## Updates in version 2.1
 * Parses binary FRPD files to get the last connected computer names and usernames on the computer
@@ -104,7 +101,6 @@ Artifacts Parsed:
 * Better KAPE implementation by separating backups into folders based on users
   
 # Future Updates
-* Figure out how to decrypt Manifest.db with user known password
 * General code refactoring and optimizations
 * Need larger datasets to be tested on
 
