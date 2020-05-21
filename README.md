@@ -3,7 +3,7 @@ Python 3 Script to read iTunes Backups
 
 Download binary from the Releases section: https://github.com/jfarley248/iTunes_Backup_Analyzer/releases
 
-*Current Version: 4.0*
+[*Current Version: 4.0*](https://github.com/jfarley248/iTunes_Backup_Reader/releases/tag/v4.0)
 * Added support for decrypting iOS 10 + Backups
     * Code implemented from https://github.com/jsharkey13/iphone_backup_decrypt
 
