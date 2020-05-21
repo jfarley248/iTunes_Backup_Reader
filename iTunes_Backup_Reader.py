@@ -75,6 +75,9 @@ def parseArgs():
     parser.add_argument("-r", "--recreate", help="Tries to recreate folder structure for unencrypted backups",
                         action="store_true")
 
+    parser.add_argument("-p",  help="Password for encrypted backups", default=None, type=str,
+                        dest='password')
+
     args = parser.parse_args()
 
 
@@ -84,6 +87,7 @@ def parseArgs():
     recreate = args.recreate
     verbose = args.verbose
     out_type = args.out_type
+    password = args.password
     bulk = args.bulk
     ir_mode = args.ir
 
@@ -114,6 +118,9 @@ def parseArgs():
         logger.error("Out type of " + out_type + " is not valid. Choose csv, db, or txt")
         sys.exit()
 
+    if bulk and password:
+        logger.error("Cannot use bulk mode with encrypted backups")
+        sys.exit()
 
     '''Checks admin rights for IR Mode'''
     if ir_mode:
@@ -129,7 +136,7 @@ def parseArgs():
             sys.exit()
 
 
-    return input_dir, output_dir, recreate, out_type, ir_mode, bulk, logger
+    return input_dir, output_dir, recreate, out_type, ir_mode, bulk, password, logger
 
 
 def main():
@@ -138,7 +145,7 @@ def main():
     start_time = time.time()
 
     '''Gets all user arguments'''
-    input_dir, output_dir, recreate, out_type, ir_mode, bulk, logger = parseArgs()
+    input_dir, output_dir, recreate, out_type, ir_mode, bulk, password, logger = parseArgs()
 
     '''Parse a single backup'''
     if not bulk and not ir_mode:
@@ -147,7 +154,7 @@ def main():
 
         if recreate:
             logger.debug("User chose to recreate folders. Starting process now")
-            recreator.startRecreate(input_dir, output_dir, logger)
+            recreator.startRecreate(input_dir, output_dir, password, logger)
     '''Bulk parse'''
     if bulk:
         subfolders = os.listdir(input_dir)
@@ -158,7 +165,7 @@ def main():
 
             if recreate:
                 logger.info("User chose to recreate folders. Starting process now")
-                recreator.startRecreate(current_folder, output_dir, logger)
+                recreator.startRecreate(current_folder, output_dir, password, logger)
 
     if ir_mode:
         path = "\\Users\\*\\AppData\\Roaming\\Apple Computer\\MobileSync\\Backup\\*"
@@ -172,7 +179,7 @@ def main():
 
             if recreate:
                 logger.info("User chose to recreate folders. Starting process now")
-                recreator.startRecreate(folders, output_dir, logger)
+                recreator.startRecreate(folders, output_dir, password, logger)
 
 
     end_time = time.time()
