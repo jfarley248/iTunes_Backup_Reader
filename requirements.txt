@@ -1,3 +1,4 @@
 pathlib-revisited
-biplist 
+biplist
+pycryptodome
 construct>=2.9

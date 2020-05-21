@@ -6,3 +6,9 @@
 .idea/iTunes_Backup_Analyzer.iml
 *.xml
 *.iml
+*.spec
+./build*
+./dist*
+.__pycache__
+./build/*
+./dist/*
