@@ -13,7 +13,7 @@ Download binary from the Releases section: https://github.com/jfarley248/iTunes_
 Usage:
 ```
 usage: iTunes_Backup_Reader.py [-h] -i INPUTDIR -o OUTPUTDIR -t OUT_TYPE [-v]
-                               [-b] [--ir] [-r] [-p PASSWORD]
+                               [-b] [--ir] [-r] [-d] [-p PASSWORD]
 
 Utility to Read iTunes Backups
 
