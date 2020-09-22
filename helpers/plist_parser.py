@@ -12,6 +12,7 @@ from helpers import writer
 from helpers.structs import sinfHelper, frpdHelper
 import os
 import sys
+from shutil import copyfile
 
 
 
@@ -174,17 +175,43 @@ def readPlists(status_plist_path, manifest_plist_path, info_plist_path, logger, 
 
 
 '''Start parsing each plist'''
-def parsePlists(input_dir, output_dir, out_type, logger):
+def parsePlists(input_dir, output_dir, out_type, decrypt, logger):
 
     '''Get paths for each plist'''
     status_plist_path = os.path.join(input_dir, "Status.plist")
     manifest_plist_path = os.path.join(input_dir, "Manifest.plist")
     info_plist_path = os.path.join(input_dir, "Info.plist")
 
+
+
+
     '''Checks paths of plists'''
     checkPaths(status_plist_path, manifest_plist_path, info_plist_path, logger, input_dir)
 
+
+
     '''Read the three plists'''
     backups, apps = readPlists(status_plist_path, manifest_plist_path, info_plist_path, logger, output_dir)
+
+
+    if decrypt:
+
+        #Copy respective plists to decrypted backup
+        plist_copy = "Device_" + backups[14] + "_DecryptedBackup"
+
+        if not os.path.exists(os.path.join(output_dir, plist_copy, "BACKUP")): os.makedirs(os.path.join(output_dir, plist_copy, "BACKUP"))
+
+        status_plist_copy = os.path.join(output_dir, plist_copy, "BACKUP", "Status.plist")
+        info_plist_copy = os.path.join(output_dir, plist_copy, "BACKUP", "Info.plist")
+        manifest_plist_copy = os.path.join(output_dir, plist_copy, "BACKUP", "Manifest.plist")
+
+        plist_data = readPlist(manifest_plist_path)
+        plist_data['IsEncrypted'] = False
+        writePlist(plist_data, manifest_plist_copy)
+
+        manifest_plist_copy = os.path.join(output_dir, plist_copy, "BACKUP", "Manifest.plist")
+
+        copyfile(status_plist_path, status_plist_copy)
+        copyfile(info_plist_path, info_plist_copy)
 
     writer.startWrite(backups, apps, output_dir, out_type, logger)

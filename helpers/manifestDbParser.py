@@ -54,7 +54,43 @@ def OpenDb(inputPath, logger):
 
 
 '''Ingests all files/folders/plists'''
-def recreate(fileId, domain, relativePath, fType, root, sourceDir, logger, a_time, m_time):
+def recreate(fileId, relativePath, fType, root, sourceDir, logger, a_time, m_time):
+
+    '''Fields with types of 4 have not been found in backups to my knowledge'''
+    if fType == 4:
+        logger.info("Found file with type of 4: " + relativePath)
+        logger.info("Type 4 files aren't found in iTunes Backups... But we'll check anyway")
+        type4File = os.path.join(sourceDir, fileId[0:2], fileId)
+        if os.path.isfile(type4File):
+            logger.info("The file actually exists... Please contact jfarley248@gmail.com to correct this code\n")
+        else:
+            logger.info("Nope, file: " + relativePath +  " does not exist")
+
+    '''Fields with types of 2 are Folders'''
+    if fType == 2:
+        logger.debug("Trying to recreate directory: " + "\\" + relativePath + " from source file: " + fileId)
+        try:
+            recreateFolder(relativePath, root, logger)
+            logger.debug("Successfully recreated directory: " + "\\" + relativePath + " from source file: " + fileId)
+        except Exception as ex:
+            logger.exception("Failed to recreate directory: " + relativePath + " from source file: "
+                              + fileId + " Exception was: " + str(ex))
+
+    '''Fields with types of 1 are Files'''
+    if fType == 1:
+        logger.debug("Trying to recreate file: " + "\\"  + relativePath + " from source file: " + fileId)
+        try:
+            recreateFile(fileId, relativePath, root, sourceDir, logger, a_time, m_time)
+            logger.debug(
+                "Successfully recreated file: "  + "\\" + relativePath + " from source file: " + fileId)
+        except Exception as ex:
+            logger.exception("Failed to recreate file: " + relativePath + " from source file: "
+                              + fileId + " Exception was: " + str(ex))
+
+
+
+'''Ingests all files/folders/plists'''
+def recreateEnc(fileId, domain, relativePath, fType, root, sourceDir, logger, a_time, m_time, decrypt_object):
 
     '''Fields with types of 4 have not been found in backups to my knowledge'''
     if fType == 4:
@@ -88,25 +124,25 @@ def recreate(fileId, domain, relativePath, fType, root, sourceDir, logger, a_tim
                               + fileId + " Exception was: " + str(ex))
 
 
+
 '''Recreates the folder structures in the output directory based on type = 2'''
-def recreateFolder(domain, relativePath, root, logger):
+def recreateFolder(relativePath, root, logger):
 
     '''If the relative path is empty, then the domain is the root folder'''
-    domain = re.sub('[<>:"|?*]', '_', domain)
     relativePath = re.sub('[<>:"|?*]', '_', relativePath)
     relativePath = relativePath.replace("/", "\\")
     if not relativePath:
-        newFolder = os.path.join(root, domain)
+        newFolder = root
         createFolder(newFolder, logger)
 
     else:
-        newFolder = os.path.join(root, domain, relativePath)
+        newFolder = os.path.join(root, relativePath)
         createFolder(newFolder, logger)
 
 
 
 '''Recreates the file structures in the output directory based on type = 3'''
-def recreateFile(fileId, domain, relativePath, root, sourceDir, logger, a_time, m_time):
+def recreateFile(fileId, relativePath, root, sourceDir, logger, a_time, m_time):
 
 
     '''Source file created from taking first two characters of fileID,
@@ -117,7 +153,7 @@ def recreateFile(fileId, domain, relativePath, root, sourceDir, logger, a_time, 
     '''Gets rid of folder slashes and replaces with backslashes, offending characters with underscores'''
     sanitizedRelPath = relativePath.replace("/", "\\")
     sanitizedRelPath = re.sub('[<>:"|?*]', '_', sanitizedRelPath)
-    destFile = os.path.join(root, domain, sanitizedRelPath)
+    destFile = os.path.join(root, sanitizedRelPath)
 
 
     if not os.path.exists(os.path.dirname(destFile)):
@@ -180,7 +216,8 @@ def readManiDb(manifestPath, sourceDir, outputDir, logger):
             WriteMetaDataToDb(file_meta_list, outputDir, logger)
             file_meta_list = []
         try:
-            recreate(fileId, domain, relativePath, fType, root, sourceDir, logger, info.get('LastStatusChange', 0), info.get('LastModified', 0))
+            # Potential area to extract to decrypted backup instead of recreated structure
+            recreate(fileId, relativePath, fType, root, sourceDir, logger, info.get('LastStatusChange', 0), info.get('LastModified', 0))
         except Exception as ex:
             logger.exception("Recreation failed for file {}/{}".format(domain, relativePath))
 
@@ -232,4 +269,6 @@ def getFileInfo(plist_blob):
         logging.exception("Failed to parse file metadata from db, exception was: " + str(ex))
 
     return info
-    
+
+
+

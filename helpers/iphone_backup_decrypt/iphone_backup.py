@@ -92,6 +92,82 @@ class EncryptedBackup:
         except sqlite3.Error:
             return False
 
+    def _decrypt_inner_file(self, *, file_id, file_bplist):
+        # Ensure we've already unlocked the Keybag:
+        self._read_and_unlock_keybag()
+        # Extract the decryption key from the PList data:
+        plist = biplist.readPlistFromString(file_bplist)
+        file_data = plist['$objects'][plist['$top']['root'].integer]
+        protection_class = file_data['ProtectionClass']
+        if "EncryptionKey" not in file_data:
+            return None  # This file is not encrypted; either a directory or empty.
+        encryption_key = plist['$objects'][file_data['EncryptionKey'].integer]['NS.data'][4:]
+        inner_key = self._keybag.unwrapKeyForClass(protection_class, encryption_key)
+        # Find the encrypted version of the file on disk and decrypt it:
+        filename_in_backup = os.path.join(self._backup_directory, file_id[:2], file_id)
+        with open(filename_in_backup, 'rb') as encrypted_file_filehandle:
+            encrypted_data = encrypted_file_filehandle.read()
+        # Decrypt the file contents:
+        decrypted_data = google_iphone_dataprotection.AESdecryptCBC(encrypted_data, inner_key)
+        # Remove any padding introduced by the CBC encryption:
+        return google_iphone_dataprotection.removePadding(decrypted_data)
+
+
+    def extract_file_as_bytes(self, relative_path):
+        """
+        Decrypt a single named file and return the bytes.
+        :param relative_path:
+            The iOS 'relativePath' of the file to be decrypted. Common relative paths are provided by the
+            'RelativePath' class, otherwise these can be found by opening the decrypted Manifest.db file
+            and examining the Files table.
+        :return: decrypted bytes of the file.
+        """
+        # Ensure that we've initialised everything:
+        if self._temp_manifest_db_conn is None:
+            self._decrypt_manifest_db_file()
+        # Use Manifest.db to find the on-disk filename and file metadata, including the keys, for the file.
+        # The metadata is contained in the 'file' column, as a binary PList file:
+        try:
+            cur = self._temp_manifest_db_conn.cursor()
+            query = """
+                SELECT fileID, file
+                FROM Files
+                WHERE relativePath = ?
+                ORDER BY domain, relativePath
+                LIMIT 1;
+            """
+            cur.execute(query, (relative_path,))
+            result = cur.fetchone()
+        except sqlite3.Error:
+            return None
+        file_id, file_bplist = result
+        # Decrypt the requested file:
+        return self._decrypt_inner_file(file_id=file_id, file_bplist=file_bplist)
+
+
+    def extract_file(self, *, relative_path, output_filename):
+        """
+        Decrypt a single named file and save it to disk.
+        This is a helper method and is exactly equivalent to extract_file_as_bytes(...) and then
+        writing that data to a file.
+        :param relative_path:
+            The iOS 'relativePath' of the file to be decrypted. Common relative paths are provided by the
+            'RelativePath' class, otherwise these can be found by opening the decrypted Manifest.db file
+            and examining the Files table.
+        :param output_filename:
+            The filename to write the decrypted file contents to.
+        """
+        # Get the decrypted bytes of the requested file:
+        decrypted_data = self.extract_file_as_bytes(relative_path)
+        # Output them to disk:
+        output_directory = os.path.dirname(output_filename)
+        if output_directory:
+            os.makedirs(output_directory, exist_ok=True)
+        if decrypted_data is not None:
+            with open(output_filename, 'wb') as outfile:
+                outfile.write(decrypted_data)
+
+
     def _decrypt_manifest_db_file(self):
 
         # Ensure we've already unlocked the Keybag:

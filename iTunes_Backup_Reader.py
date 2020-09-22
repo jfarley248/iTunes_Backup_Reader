@@ -75,6 +75,9 @@ def parseArgs():
     parser.add_argument("-r", "--recreate", help="Tries to recreate folder structure for unencrypted backups",
                         action="store_true")
 
+    parser.add_argument("-d", "--decrypt", help="Just decrypts the backup into an unecrypted, unparsed format",
+                        action="store_true")
+
     parser.add_argument("-p",  help="Password for encrypted backups", default=None, type=str,
                         dest='password')
 
@@ -85,6 +88,7 @@ def parseArgs():
     input_dir = args.inputDir
     output_dir = args.outputDir
     recreate = args.recreate
+    decrypt = args.decrypt
     verbose = args.verbose
     out_type = args.out_type
     password = args.password
@@ -136,7 +140,7 @@ def parseArgs():
             sys.exit()
 
 
-    return input_dir, output_dir, recreate, out_type, ir_mode, bulk, password, logger
+    return input_dir, output_dir, recreate, decrypt, out_type, ir_mode, bulk, password, logger
 
 
 def main():
@@ -145,16 +149,30 @@ def main():
     start_time = time.time()
 
     '''Gets all user arguments'''
-    input_dir, output_dir, recreate, out_type, ir_mode, bulk, password, logger = parseArgs()
+    input_dir, output_dir, recreate, decrypt, out_type, ir_mode, bulk, password, logger = parseArgs()
 
     '''Parse a single backup'''
     if not bulk and not ir_mode:
         logger.info("Starting to read backup at: " + input_dir)
-        plist_parser.parsePlists(input_dir, output_dir, out_type, logger)
+        plist_parser.parsePlists(input_dir, output_dir, out_type, decrypt, logger)
 
-        if recreate:
+        if recreate and not decrypt:
             logger.debug("User chose to recreate folders. Starting process now")
-            recreator.startRecreate(input_dir, output_dir, password, logger)
+            recreator.startRecreate(input_dir, output_dir, password, 0, logger)
+
+
+        '''Just decrypt backup and no recreate'''
+        if decrypt and not recreate:
+            if password is None:
+                logger.error("You need to supply a password for decryption")
+                sys.exit()
+            recreator.startRecreate(input_dir, output_dir, password, decrypt, logger)
+
+
+        if decrypt and recreate:
+            logger.error("Cannot use -d and -r flags together. -r will decrypt the backup and recreate")
+            sys.exit()
+
     '''Bulk parse'''
     if bulk:
         subfolders = os.listdir(input_dir)

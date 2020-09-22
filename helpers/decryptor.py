@@ -29,6 +29,7 @@ class Decryptor:
         self.output_dir = output_dir
         self.logger = logger
         self.password = password
+        self.decryptor_object = None
         self.decrypted_manifest_db = None
         self.start_decryption()
 
@@ -37,8 +38,8 @@ class Decryptor:
 
 
         backup_path = self.input_dir
-        decrypt = EncryptedBackup(backup_directory=backup_path, passphrase=self.password, outputdir=self.output_dir, log= self.logger)
-        self.decrypted_manifest_db = decrypt._decrypted_manifest_db_path
+        self.decryptor_object = EncryptedBackup(backup_directory=backup_path, passphrase=self.password, outputdir=self.output_dir, log= self.logger)
+        self.decrypted_manifest_db = self.decryptor_object._decrypted_manifest_db_path
 
 
 
