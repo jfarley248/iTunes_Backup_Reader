@@ -32,7 +32,10 @@ optional arguments:
                         root of drive
   -r, --recreate        Tries to recreate folder structure for unencrypted
                         backups
+  -d, --decrypt         Just decrypts the backup into an unecrypted, unparsed
+                        format
   -p PASSWORD           Password for encrypted backups
+
 
 
 ```
