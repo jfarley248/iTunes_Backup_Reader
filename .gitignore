@@ -1,4 +1,5 @@
-
+build/*
+dist/*
 *.pyc
 .idea/workspace.xml
 .idea/vcs.xml

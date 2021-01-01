@@ -179,7 +179,7 @@ def main():
         for folders in subfolders:
             current_folder = os.path.join(input_dir, folders)
             logger.info("Starting to read backup at: " + current_folder)
-            plist_parser.parsePlists(current_folder, output_dir, out_type, logger)
+            plist_parser.parsePlists(current_folder, output_dir, out_type, decrypt, logger)
 
             if recreate:
                 logger.info("User chose to recreate folders. Starting process now")
