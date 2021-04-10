@@ -1,6 +1,8 @@
 # iTunes_Backup_Reader
 Python 3 Script to read iTunes Backups
 
+(Due to a bug in biplist, the script will not work on Python 3.9, please use a lower version of Python or one of the frozen exe's)
+
 Download binary from the Releases section: https://github.com/jfarley248/iTunes_Backup_Analyzer/releases
 
 [*Current Version: 4.0.1*](https://github.com/jfarley248/iTunes_Backup_Reader/releases/tag/v4.0.1)
