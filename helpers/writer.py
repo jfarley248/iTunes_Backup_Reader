@@ -25,39 +25,39 @@ def writeToTxt(backup_list, application_list, output_file, logger):
     output = open(output_file, "w+")
 
     output.write("DEVICE BACKUP INFO\n" +
-                 "Device Name: \t" + backup_list[0] + "\n" +
-                 "Product Name: \t" + backup_list[1] + "\n" +
-                 "Product Model: \t" + backup_list[2] + "\n" +
-                 "Phone Number: \t" + backup_list[3] + "\n" +
-                 "iOS Version: \t" + backup_list[4]+ "\n" +
+                 "Device Name: \t" + str(backup_list[0]) + "\n" +
+                 "Product Name: \t" + str(backup_list[1]) + "\n" +
+                 "Product Model: \t" + str(backup_list[2]) + "\n" +
+                 "Phone Number: \t" + str(backup_list[3]) + "\n" +
+                 "iOS Version: \t" + str(backup_list[4]) + "\n" +
                  "Backup Completetion: \t" + str(backup_list[5]) + "\n" +
                  "Backup Complete Write: \t" + str(backup_list[6]) + "\n" +
-                 "Users & Computers Connected to: \t\n" + backup_list[7] + "\n" +
+                 "Users & Computers Connected to: \t\n" + str(backup_list[7]) + "\n" +
                  "Is Passcode Set: \t" + str(backup_list[8]) + "\n" +
                  "Is Encrypted: \t" + str(backup_list[9]) + "\n" +
-                 "GUID: \t" + backup_list[10] + "\n" +
-                 "ICCID: \t" + backup_list[11] + "\n" +
-                 "IMEI: \t" + backup_list[12] + "\n" +
-                 "MEID: \t" + backup_list[13] + "\n" +
-                 "Serial Number: \t" + backup_list[14] + "\n" +
+                 "GUID: \t" + str(backup_list[10]) + "\n" +
+                 "ICCID: \t" + str(backup_list[11]) + "\n" +
+                 "IMEI: \t" + str(backup_list[12]) + "\n" +
+                 "MEID: \t" + str(backup_list[13]) + "\n" +
+                 "Serial Number: \t" + str(backup_list[14]) + "\n" +
                  "Is Full Backup: \t" + str(backup_list[15]) + "\n" +
-                 "Version: \t" + backup_list[16] + "\n" +
-                 "iTunes Version: \t" + backup_list[17] +  "\n\n")
+                 "Version: \t" + str(backup_list[16]) + "\n" +
+                 "iTunes Version: \t" + str(backup_list[17]) +  "\n\n")
 
     output.write("\nAPPLICATIONS INSTALLED\n")
     for app in application_list:
-        output.write("App Name: \t" + app[2] + "\n" +
-                     "Device Installed on: \t" + app[0] + "\n" +
+        output.write("App Name: \t" + str(app[2]) + "\n" +
+                     "Device Installed on: \t" + str(app[0]) + "\n" +
                      "Purchase Date: \t" + str(app[5]) + "\n" +
-                     "Apple ID: \t" + app[3] + "\n" +
-                     "Apple ID Name: \t" + app[4] + "\n" +
-                     "Device Installed on Serial Number: \t" + app[1] + "\n" +
+                     "Apple ID: \t" + str(app[3]) + "\n" +
+                     "Apple ID Name: \t" + str(app[4]) + "\n" +
+                     "Device Installed on Serial Number: \t" + str(app[1]) + "\n" +
                      "Is Possibly Sideloaded: \t" + str(app[6]) + "\n" +
-                     "App Version: \t" + app[7] + "\n" +
+                     "App Version: \t" + str(app[7]) + "\n" +
                      "Is Auto Downloaded: \t" + str(app[8]) + "\n" +
                      "Is Purchased Redownloaded: \t" + str(app[9]) + "\n" +
-                     "Publisher: \t" + app[10] + "\n" +
-                     "Full App Name: \t" + app[11] + "\n\n"
+                     "Publisher: \t" + str(app[10]) + "\n" +
+                     "Full App Name: \t" + str(app[11]) + "\n\n"
                      )
     output.close()
 
