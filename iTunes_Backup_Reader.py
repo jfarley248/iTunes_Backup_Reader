@@ -19,7 +19,7 @@ from helpers import plist_parser, recreator
 from multiprocessing import Process
 
 
-ASCII_ART = '''
+ASCII_ART = r'''
 
   _ _____                   ___          _               ___             _         
  (_)_   _|  _ _ _  ___ ___ | _ ) __ _ __| |___  _ _ __  | _ \___ __ _ __| |___ _ _ 
