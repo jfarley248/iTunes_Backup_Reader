@@ -63,7 +63,7 @@ def parseArgs():
     parser.add_argument("-t", "--type", help="Output type. txt csv or db", required=True, type=str,
                         dest='out_type')
 
-    parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+    parser.add_argument("-v", "--verbose", help="Increase output verbosity", action="store_true")
 
     parser.add_argument("-b", "--bulk", help="Bulk parse. Point at folder containing backup folders", action="store_true")
 
