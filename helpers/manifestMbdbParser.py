@@ -39,7 +39,7 @@ def mbdbParser(manifest_mbdb_path, input_dir, output_dir, logger):
 
         '''Create domain path if it doesnt exist'''
         domain = (record.Domain.String).decode("utf-8")
-        domain_path = os.path.join(output_dir + "\\" + str(domain))
+        domain_path = os.path.join(output_dir, str(domain))
         if os.path.isdir(domain_path):
             pass
         else:
@@ -62,14 +62,17 @@ def mbdbParser(manifest_mbdb_path, input_dir, output_dir, logger):
 
                 '''Do some fun reversing strings to get the directory of the path so that we can copy the file properly'''
                 dest_path = os.path.join(output_dir, domain, path)
-                dest_path = dest_path.replace("/", "\\")
-                reversed_dest_path = dest_path[::-1]
-                dest_path_root_reversed = reversed_dest_path.split('\\', 1)[-1]
-                dest_path_root = dest_path_root_reversed[::-1]
+                dest_path_root = os.path.dirname(dest_path)
+                # Ensure no Windows-incompatible characters
+                def safe_char(char):
+                    if char in {"*",'"',"/","\\",":","|","?"}:
+                        return "-"
+                    else:
+                        return char
+                dest_filename =  "".join(safe_char(char) for char in os.path.basename(dest_path))
+                dest_path = os.path.join(dest_path_root, dest_filename)
                 if os.path.isdir(dest_path_root):
                     copyfile(file_path, dest_path)
                 else:
                     os.makedirs(dest_path_root)
                     copyfile(file_path, dest_path)
-
-
