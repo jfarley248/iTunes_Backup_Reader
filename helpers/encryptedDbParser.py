@@ -11,7 +11,7 @@ from __future__ import print_function
 
 import os
 import helpers.deserializer as deserializer
-from biplist import *
+import plistlib
 import logging
 import plistlib
 import datetime

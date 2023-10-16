@@ -10,7 +10,7 @@
 
 '''
 
-from biplist import *
+import plistlib
 import os
 from helpers import manifestDbParser, manifestMbdbParser, encryptedDbParser
 import sys

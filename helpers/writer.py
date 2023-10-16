@@ -23,7 +23,7 @@ def OpenDb(inputPath, logger):
 '''Write to a plain ole txt file'''
 def writeToTxt(backup_list, application_list, output_file, logger):
     output = open(output_file, "w+")
-
+    backup_list = [str(i) for i in backup_list]
     output.write("DEVICE BACKUP INFO\n" +
                  "Device Name: \t" + backup_list[0] + "\n" +
                  "Product Name: \t" + backup_list[1] + "\n" +
