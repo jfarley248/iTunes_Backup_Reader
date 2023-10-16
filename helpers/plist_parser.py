@@ -7,7 +7,7 @@
    ------------
 '''
 
-from biplist import *
+import plistlib
 from helpers import writer
 from helpers.structs import sinfHelper, frpdHelper
 import os
@@ -50,7 +50,7 @@ def readApps(apps, info_plist, logger):
 
         iTunesBinaryPlist = app.get('iTunesMetadata', {})
 
-        iTunesPlist = readPlistFromString(iTunesBinaryPlist)
+        iTunesPlist = plistlib.loads(iTunesBinaryPlist)
 
         '''Find Apple ID & Purchase Date'''
         downloadInfo = iTunesPlist.get('com.apple.iTunesStore.downloadInfo', {})
@@ -135,10 +135,13 @@ def readPlists(status_plist_path, manifest_plist_path, info_plist_path, logger, 
     if not os.path.exists(status_plist_path):
         status_plist = None
     else:
+        with open(status_plist_path, "rb") as f:
+            status_plist = plistlib.load(f)
 
-        status_plist = readPlist(status_plist_path)
-    manifest_plist = readPlist(manifest_plist_path)
-    info_plist = readPlist(info_plist_path)
+    with open(manifest_plist_path, "rb") as f:
+        manifest_plist = plistlib.load(f)
+    with open(info_plist_path, "rb") as f:
+        info_plist = plistlib.load(f)
 
 
 
@@ -205,11 +208,13 @@ def parsePlists(input_dir, output_dir, out_type, decrypt, logger):
         info_plist_copy = os.path.join(output_dir, plist_copy, "BACKUP", "Info.plist")
         manifest_plist_copy = os.path.join(output_dir, plist_copy, "BACKUP", "Manifest.plist")
 
-        plist_data = readPlist(manifest_plist_path)
-        plist_data['IsEncrypted'] = False
-        writePlist(plist_data, manifest_plist_copy)
+        with open(manifest_plist_path, "rb") as fh:
+            plist_data = plistlib.load(fh)
 
-        manifest_plist_copy = os.path.join(output_dir, plist_copy, "BACKUP", "Manifest.plist")
+        plist_data['IsEncrypted'] = False
+
+        with open(manifest_plist_copy, "wb") as fh:
+            plistlib.dump(plist_data, fh)
 
         copyfile(status_plist_path, status_plist_copy)
         copyfile(info_plist_path, info_plist_copy)
