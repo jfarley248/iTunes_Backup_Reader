@@ -208,11 +208,13 @@ def parsePlists(input_dir, output_dir, out_type, decrypt, logger):
         info_plist_copy = os.path.join(output_dir, plist_copy, "BACKUP", "Info.plist")
         manifest_plist_copy = os.path.join(output_dir, plist_copy, "BACKUP", "Manifest.plist")
 
-        plist_data = readPlist(manifest_plist_path)
-        plist_data['IsEncrypted'] = False
-        writePlist(plist_data, manifest_plist_copy)
+        with open(manifest_plist_path, "rb") as fh:
+            plist_data = plistlib.load(fh)
 
-        manifest_plist_copy = os.path.join(output_dir, plist_copy, "BACKUP", "Manifest.plist")
+        plist_data['IsEncrypted'] = False
+
+        with open(manifest_plist_copy, "wb") as fh:
+            plistlib.dump(plist_data, fh)
 
         copyfile(status_plist_path, status_plist_copy)
         copyfile(info_plist_path, info_plist_copy)

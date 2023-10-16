@@ -23,7 +23,9 @@ def startRecreate(input_dir, output_dir, password, decrypt_only, logger):
 
     '''Check encryption'''
     manifest_plist_path = os.path.join(input_dir, "Manifest.plist")
-    manifest_plist = readPlist(manifest_plist_path)
+    with open(manifest_plist_path, "rb") as fh:
+        manifest_plist = plistlib.load(fh)
+
     encrypted = manifest_plist.get("IsEncrypted", {})
     version = float(manifest_plist.get("Version", {}))
 
